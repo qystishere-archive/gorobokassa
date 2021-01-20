@@ -55,31 +55,31 @@ func (r *Robokassa) NewPayment(pp PaymentParameters) *Payment {
 	}
 }
 
-func (r *Robokassa) ParseNotification(formParams map[string]string) (*Notification, error) {
+func (r *Robokassa) ParseNotification(formParameters map[string]string) (*Notification, error) {
 	for _, v := range requiredNotificationParams {
-		_, ok := formParams[v]
+		_, ok := formParameters[v]
 		if !ok {
 			return nil, ErrNoRequiredParameters
 		}
 	}
 
-	sum, err := strconv.ParseFloat(formParams["OutSum"], 32)
+	sum, err := strconv.ParseFloat(formParameters["OutSum"], 32)
 	if err != nil {
 		return nil, fmt.Errorf("%w: OutSum", ErrBadParameterFormat)
 	}
 
-	id, err := strconv.ParseUint(formParams["InvId"], 10, 32)
+	id, err := strconv.ParseUint(formParameters["InvId"], 10, 32)
 	if err != nil {
 		return nil, fmt.Errorf("%w: InvId", ErrBadParameterFormat)
 	}
 
-	fee, err := strconv.ParseFloat(formParams["Fee"], 32)
+	fee, err := strconv.ParseFloat(formParameters["Fee"], 32)
 	if err != nil {
 		return nil, fmt.Errorf("%w: Fee", ErrBadParameterFormat)
 	}
 
 	data := make(map[string]string, 0)
-	for k, v := range formParams {
+	for k, v := range formParameters {
 		// FIXME:
 		if len(k) > 4 && strings.HasPrefix(strings.ToLower(k), "shp_") {
 			data[k[4:]] = v
@@ -94,15 +94,19 @@ func (r *Robokassa) ParseNotification(formParams map[string]string) (*Notificati
 		Data:      data,
 	}
 
-	if email, ok := formParams["EMail"]; ok {
+	if email, ok := formParameters["EMail"]; ok {
 		notification.Email = &email
 	}
 
-	if method, ok := formParams["IncCurrLabel"]; ok {
+	if method, ok := formParameters["PaymentMethod"]; ok {
 		notification.Method = &method
 	}
 
-	if incSum, ok := formParams["IncSum"]; ok {
+	if methodLabel, ok := formParameters["IncCurrLabel"]; ok {
+		notification.MethodLabel = &methodLabel
+	}
+
+	if incSum, ok := formParameters["IncSum"]; ok {
 		incSum, err := strconv.ParseFloat(incSum, 32)
 		if err != nil {
 			return nil, fmt.Errorf("%w: IncSum", ErrBadParameterFormat)
@@ -111,7 +115,7 @@ func (r *Robokassa) ParseNotification(formParams map[string]string) (*Notificati
 		notification.IncSum = &incSum32
 	}
 
-	if notification.Signature() != formParams["SignatureValue"] {
+	if notification.Signature() != formParameters["SignatureValue"] {
 		return nil, ErrBadSignature
 	}
 

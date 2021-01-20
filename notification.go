@@ -24,6 +24,8 @@ type Notification struct {
 	Email *string
 	// Метод платежа.
 	Method *string
+	// Конкретный метод платежа. (банк?)
+	MethodLabel *string
 	// Сумма с учетом комиссии.
 	IncSum *float32
 
