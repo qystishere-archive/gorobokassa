@@ -73,7 +73,8 @@ func (p *Payment) Signature() string {
 
 	data := make([]string, 0)
 	for k, v := range p.Data {
-		data = append(data, url.QueryEscape(fmt.Sprintf("SHP_%s=%v", k, v)))
+		vs := url.QueryEscape(fmt.Sprintf("%v", v))
+		data = append(data, fmt.Sprintf("SHP_%s=%s", k, vs))
 	}
 	sort.Strings(data)
 	for _, raw := range data {
@@ -128,7 +129,8 @@ func (p *Payment) QueryURL() string {
 
 	data := make([]string, 0)
 	for k, v := range p.Data {
-		data = append(data, url.QueryEscape(fmt.Sprintf("SHP_%s=%v", k, v)))
+		vs := url.QueryEscape(fmt.Sprintf("%v", v))
+		data = append(data, fmt.Sprintf("SHP_%s=%s", k, vs))
 	}
 	sort.Strings(data)
 	for _, raw := range data {
