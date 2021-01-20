@@ -3,6 +3,7 @@ package gorobokassa
 import (
 	"crypto/md5"
 	"fmt"
+	"net/url"
 	"sort"
 	"strings"
 	"time"
@@ -72,7 +73,7 @@ func (p *Payment) Signature() string {
 
 	data := make([]string, 0)
 	for k, v := range p.Data {
-		data = append(data, fmt.Sprintf("SHP_%s=%s", k, v))
+		data = append(data, url.QueryEscape(fmt.Sprintf("SHP_%s=%v", k, v)))
 	}
 	sort.Strings(data)
 	for _, raw := range data {
@@ -87,36 +88,52 @@ func (p *Payment) Signature() string {
 	)
 }
 
-func (p *Payment) Form() map[string]string {
-	m := map[string]string{
-		"MerchantLogin": p.Robokassa.parameters.MerchantLogin,
-		"OutSum": fmt.Sprintf("%.2f", p.Sum),
-		"Description": p.Description,
-		"SignatureValue": p.Signature(),
-	}
+func (p *Payment) QueryURL() string {
+	var sb strings.Builder
+	sb.WriteString(
+		fmt.Sprintf(
+			"?MerchantLogin=%s&OutSum=%.2f&Description=%s&SignatureValue=%s",
+			p.Robokassa.parameters.MerchantLogin,
+			p.Sum,
+			p.Description,
+			p.Signature(),
+		),
+	)
 	if p.Method != nil {
-		m["IncCurrLabel"] = *p.Method
+		sb.WriteString(fmt.Sprintf("&IncCurrLabel=%s", *p.Method))
 	}
 	if p.ID != nil {
-		m["InvId"] = fmt.Sprintf("%d", *p.ID)
+		sb.WriteString(fmt.Sprintf("&InvId=%d", *p.ID))
 	}
 	if p.Language != nil {
-		m["Culture"] = *p.Language
+		sb.WriteString(fmt.Sprintf("&Culture=%s", *p.Language))
 	}
 	if p.Encoding != nil {
-		m["Encoding"] = *p.Encoding
+		sb.WriteString(fmt.Sprintf("&Encoding=%s", *p.Encoding))
 	}
 	if p.Email != nil {
-		m["Email"] = *p.Email
+		sb.WriteString(fmt.Sprintf("&Email=%s", *p.Email))
 	}
 	if p.ExpireAt != nil {
-		m["ExpirationDate"] = (*p.ExpireAt).Format("2006-01-02 15:04:05")
+		sb.WriteString(
+			fmt.Sprintf("&ExpirationDate=%s", (*p.ExpireAt).Format("2006-01-02 15:04:05")),
+		)
 	}
 	if p.Currency != nil {
-		m["OutSumCurrency"] = *p.Currency
+		sb.WriteString(fmt.Sprintf("&OutSumCurrency=%s", *p.Currency))
 	}
 	if p.IP != nil {
-		m["UserIp"] = *p.IP
+		sb.WriteString(fmt.Sprintf("&UserIp=%s", *p.IP))
 	}
-	return m
+
+	data := make([]string, 0)
+	for k, v := range p.Data {
+		data = append(data, url.QueryEscape(fmt.Sprintf("SHP_%s=%v", k, v)))
+	}
+	sort.Strings(data)
+	for _, raw := range data {
+		sb.WriteString(fmt.Sprintf("&%s", raw))
+	}
+
+	return sb.String()
 }
