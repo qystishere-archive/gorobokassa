@@ -7,11 +7,11 @@ import (
 	"strings"
 )
 
-type method string
-
-const (
-	MethodMD5 method = "md5"
-)
+// type method string
+//
+// const (
+// 	MethodMD5 method = "md5"
+// )
 
 var (
 	ErrNoRequiredParameters = errors.New("not all required parameters were provided")
@@ -19,7 +19,7 @@ var (
 	ErrBadSignature         = errors.New("bad signature")
 
 	requiredNotificationParams = []string{
-		"OutSum", "InvId", "EMail", "Fee", "SignatureValue",
+		"OutSum", "InvId", "Fee", "SignatureValue",
 	}
 )
 
@@ -31,7 +31,7 @@ type Parameters struct {
 	// Индетификатор магазина.
 	MerchantLogin string
 	// Метод рассчета контрольной суммы.
-	Method method
+	// Method method
 	// Пароль #1.
 	Password1 string
 	// Пароль #2.
@@ -80,8 +80,9 @@ func (r *Robokassa) ParseNotification(formParams map[string]string) (*Notificati
 
 	data := make(map[string]string, 0)
 	for k, v := range formParams {
-		if strings.HasPrefix(strings.ToLower(k), "shp_") {
-			data[k] = v
+		// FIXME:
+		if len(k) > 4 && strings.HasPrefix(strings.ToLower(k), "shp_") {
+			data[k[4:]] = v
 		}
 	}
 
@@ -89,9 +90,25 @@ func (r *Robokassa) ParseNotification(formParams map[string]string) (*Notificati
 		Robokassa: r,
 		Sum:       float32(sum),
 		ID:        uint32(id),
-		Email:     formParams["EMail"],
 		Fee:       float32(fee),
 		Data:      data,
+	}
+
+	if email, ok := formParams["EMail"]; ok {
+		notification.Email = &email
+	}
+
+	if method, ok := formParams["IncCurrLabel"]; ok {
+		notification.Method = &method
+	}
+
+	if incSum, ok := formParams["IncSum"]; ok {
+		incSum, err := strconv.ParseFloat(incSum, 32)
+		if err != nil {
+			return nil, fmt.Errorf("%w: IncSum", ErrBadParameterFormat)
+		}
+		incSum32 := float32(incSum)
+		notification.IncSum = &incSum32
 	}
 
 	if notification.Signature() != formParams["SignatureValue"] {

@@ -73,20 +73,23 @@ func (p *Payment) Signature() string {
 
 	data := make([]string, 0)
 	for k, v := range p.Data {
-		vs := url.QueryEscape(fmt.Sprintf("%v", v))
-		data = append(data, fmt.Sprintf("SHP_%s=%s", k, vs))
+		data = append(data, fmt.Sprintf(
+			"SHP_%s=%s",
+			k,
+			url.QueryEscape(fmt.Sprintf("%v", v)),
+		))
 	}
 	sort.Strings(data)
 	for _, raw := range data {
 		parameters = append(parameters, raw)
 	}
 
-	return fmt.Sprintf(
+	return strings.ToUpper(fmt.Sprintf(
 		"%x",
 		md5.Sum([]byte(
 			strings.Join(parameters, ":"),
 		)),
-	)
+	))
 }
 
 func (p *Payment) QueryURL() string {
