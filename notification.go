@@ -19,7 +19,12 @@ type Notification struct {
 	Fee float32
 
 	// Пользовательские параметры.
-	Data map[string]interface{}
+	Data map[string]string
+}
+
+func (n *Notification) Get(name string) (value string, ok bool) {
+	value, ok = n.Data[name]
+	return
 }
 
 func (n *Notification) Signature() string {

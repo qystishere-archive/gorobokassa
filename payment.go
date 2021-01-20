@@ -86,3 +86,37 @@ func (p *Payment) Signature() string {
 		)),
 	)
 }
+
+func (p *Payment) Form() map[string]string {
+	m := map[string]string{
+		"MerchantLogin": p.Robokassa.parameters.MerchantLogin,
+		"OutSum": fmt.Sprintf("%.2f", p.Sum),
+		"Description": p.Description,
+		"SignatureValue": p.Signature(),
+	}
+	if p.Method != nil {
+		m["IncCurrLabel"] = *p.Method
+	}
+	if p.ID != nil {
+		m["InvId"] = fmt.Sprintf("%d", *p.ID)
+	}
+	if p.Language != nil {
+		m["Culture"] = *p.Language
+	}
+	if p.Encoding != nil {
+		m["Encoding"] = *p.Encoding
+	}
+	if p.Email != nil {
+		m["Email"] = *p.Email
+	}
+	if p.ExpireAt != nil {
+		m["ExpirationDate"] = (*p.ExpireAt).Format("2006-01-02 15:04:05")
+	}
+	if p.Currency != nil {
+		m["OutSumCurrency"] = *p.Currency
+	}
+	if p.IP != nil {
+		m["UserIp"] = *p.IP
+	}
+	return m
+}

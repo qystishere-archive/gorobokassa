@@ -75,7 +75,7 @@ func (r *Robokassa) ParseNotification(formParams map[string]string) (*Notificati
 		return nil, fmt.Errorf("%w: Fee", ErrBadParameterFormat)
 	}
 
-	data := make(map[string]interface{}, 0)
+	data := make(map[string]string, 0)
 	for k, v := range formParams {
 		if strings.HasPrefix(strings.ToLower(k), "shp_") {
 			data[k] = v
