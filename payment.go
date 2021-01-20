@@ -135,5 +135,9 @@ func (p *Payment) QueryURL() string {
 		sb.WriteString(fmt.Sprintf("&%s", raw))
 	}
 
+	if p.Robokassa.parameters.Test {
+		sb.WriteString("&IsTest=1")
+	}
+
 	return sb.String()
 }

@@ -36,6 +36,9 @@ type Parameters struct {
 	Password1 string
 	// Пароль #2.
 	Password2 string
+
+	// Тестовая среда?
+	Test bool
 }
 
 func New(parameters Parameters) *Robokassa {
