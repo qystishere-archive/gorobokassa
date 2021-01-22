@@ -10,11 +10,11 @@ import (
 type Notification struct {
 	*Robokassa
 	// Сумма, оплаченная покупателем.
-	Sum float32
+	Sum string
 	// Номер платежа в магазине.
 	ID uint32
 	// Комиссия ROBOKASSA за проведение операции. Для физ. лиц всегда 0.
-	Fee float32
+	Fee string
 
 	/*
 		Опционально
@@ -27,7 +27,7 @@ type Notification struct {
 	// Конкретный метод платежа. (банк?)
 	MethodLabel *string
 	// Сумма с учетом комиссии.
-	IncSum *float32
+	IncSum *string
 
 	// Пользовательские параметры.
 	Data map[string]string
@@ -40,12 +40,8 @@ func (n *Notification) Get(name string) (value string, ok bool) {
 
 func (n *Notification) Signature() string {
 	parameters := make([]string, 0)
-	// Костыльно, но что поделать.
 	parameters = append(parameters,
-		strings.Replace(
-			fmt.Sprintf("%.2f", n.Sum),
-			".00", "", 1,
-		),
+		n.Sum,
 		fmt.Sprintf("%d", n.ID),
 		n.Robokassa.parameters.Password2,
 	)

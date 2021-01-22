@@ -63,19 +63,9 @@ func (r *Robokassa) ParseNotification(formParameters map[string]string) (*Notifi
 		}
 	}
 
-	sum, err := strconv.ParseFloat(formParameters["OutSum"], 32)
-	if err != nil {
-		return nil, fmt.Errorf("%w: OutSum", ErrBadParameterFormat)
-	}
-
 	id, err := strconv.ParseUint(formParameters["InvId"], 10, 32)
 	if err != nil {
 		return nil, fmt.Errorf("%w: InvId", ErrBadParameterFormat)
-	}
-
-	fee, err := strconv.ParseFloat(formParameters["Fee"], 32)
-	if err != nil {
-		return nil, fmt.Errorf("%w: Fee", ErrBadParameterFormat)
 	}
 
 	data := make(map[string]string, 0)
@@ -88,9 +78,9 @@ func (r *Robokassa) ParseNotification(formParameters map[string]string) (*Notifi
 
 	notification := &Notification{
 		Robokassa: r,
-		Sum:       float32(sum),
+		Sum:       formParameters["OutSum"],
 		ID:        uint32(id),
-		Fee:       float32(fee),
+		Fee:       formParameters["Fee"],
 		Data:      data,
 	}
 
@@ -107,12 +97,7 @@ func (r *Robokassa) ParseNotification(formParameters map[string]string) (*Notifi
 	}
 
 	if incSum, ok := formParameters["IncSum"]; ok {
-		incSum, err := strconv.ParseFloat(incSum, 32)
-		if err != nil {
-			return nil, fmt.Errorf("%w: IncSum", ErrBadParameterFormat)
-		}
-		incSum32 := float32(incSum)
-		notification.IncSum = &incSum32
+		notification.IncSum = &incSum
 	}
 
 	if notification.Signature() != formParameters["SignatureValue"] {

@@ -23,7 +23,7 @@ func TestNotifications(t *testing.T) {
 		t.Fatalf("%v", err)
 	}
 
-	if notification.Sum != 119 {
+	if notification.Sum != "119" {
 		t.Fatalf("sum must be = 119")
 	}
 
